@@ -1,24 +1,20 @@
-import logo from './logo.svg';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import BioPage from './pages/BioPage';
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Nếu URL là '/' (trang chủ), thì hiển thị HomePage */}
+        <Route path="/" element={<HomePage />} />
+        
+        {/* Nếu URL có dạng '/ten-gi-do', thì hiển thị BioPage */}
+        {/* ':slug' là một tham số động */}
+        <Route path="/:slug" element={<BioPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
