@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
+
 import { BiBarChart, BiTrendingUp, BiLink } from 'react-icons/bi';
 import { 
     FaEye, 
