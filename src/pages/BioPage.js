@@ -1,54 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Công cụ để đọc 'slug' từ URL
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import './BioPage.css'; // File CSS riêng cho trang này
+
+import BlockRenderer from '../components/BlockRenderer';
+import './BioPage.css';
 
 export default function BioPage() {
-  const { slug } = useParams(); // Lấy slug từ URL, ví dụ: 'dang-hong-huy'
-  const [profile, setProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+    const { slug } = useParams();
+    const [profile, setProfile] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
 
-  // useEffect sẽ tự động chạy khi trang được tải
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setIsLoading(true);
-      try {
-        // Gọi API sử dụng biến môi trường
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profiles/${slug}`);
-        setProfile(response.data);
-        setError('');
-      } catch (err) {
-        setError('Không tìm thấy profile này!');
-        console.error("Lỗi khi tải profile:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    useEffect(() => {
+        const fetchProfile = async () => {
+            setIsLoading(true);
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profiles/${slug}`);
+                setProfile(response.data);
+            } catch (err) {
+                setError('Không tìm thấy profile này.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchProfile();
+    }, [slug]);
 
-    fetchProfile();
-  }, [slug]); // Nó sẽ chạy lại nếu slug trên URL thay đổi
+    if (isLoading) {
+        return <div className="loading-container"><h1 className="text-xl font-semibold">Đang tải...</h1></div>;
+    }
 
-  if (isLoading) {
-    return <div className="loading-container"><h1>Đang tải...</h1></div>;
-  }
+    if (error) {
+        return <div className="error-container"><h1>{error}</h1></div>;
+    }
 
-  if (error) {
-    return <div className="error-container"><h1>{error}</h1></div>;
-  }
+    return (
+        <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4 sm:p-8">
+            <div className="w-full max-w-2xl mx-auto">
+                <div className="text-center mb-8">
+                    <img 
+                        src={profile.avatarUrl || 'https://via.placeholder.com/150'} 
+                        alt="Avatar" 
+                        className="w-24 h-24 rounded-full mx-auto shadow-lg object-cover"
+                    />
+                    <h1 className="text-3xl font-bold mt-4 text-gray-800">{profile.displayName}</h1>
+                    <p className="text-gray-600 mt-2 px-4">{profile.description}</p>
+                </div>
+                
+                <div className="w-full">
+                    {profile.blocks && profile.blocks.map(block => (
+                        <BlockRenderer key={block.id} block={block} />
+                    ))}
+                </div>
 
-  return (
-    <div className="bio-container">
-      <img src={profile.avatarUrl || 'https://via.placeholder.com/150'} alt="Avatar" className="avatar" />
-      <h1>{profile.displayName}</h1>
-      <p className="description">{profile.description}</p>
-      
-      <div className="links-container">
-        {profile.facebookLink && <a href={profile.facebookLink} target="_blank" rel="noopener noreferrer" className="link-button facebook">Facebook</a>}
-        {profile.youtubeLink && <a href={profile.youtubeLink} target="_blank" rel="noopener noreferrer" className="link-button youtube">YouTube</a>}
-        {profile.tiktokLink && <a href={profile.tiktokLink} target="_blank" rel="noopener noreferrer" className="link-button tiktok">TikTok</a>}
-        {profile.githubLink && <a href={profile.githubLink} target="_blank" rel="noopener noreferrer" className="link-button github">GitHub</a>}
-      </div>
-    </div>
-  );
+                 <a 
+                    href="/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-center mt-10 text-xs text-gray-400 hover:text-gray-600"
+                >
+                   Tạo Bio Link miễn phí
+                </a>
+            </div>
+        </div>
+    );
 }

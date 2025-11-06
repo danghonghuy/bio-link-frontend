@@ -1,95 +1,123 @@
-import React, { useState } from 'react';
-import axios from 'axios'; // Import công cụ gọi API vừa cài
-import '../App.css'; 
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { signInWithGoogle, doSignOut } from '../firebase';
+import LandingPage from '../components/LandingPage';
+import Dashboard from '../components/Dashboard';
+import { BiPencil } from 'react-icons/bi';
+
+const handleImageUpload = async (file) => {
+    const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+    const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    try {
+        const response = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, formData);
+        return response.data.secure_url;
+    } catch (error) {
+        console.error("Lỗi tải ảnh lên Cloudinary:", error);
+        return null;
+    }
+};
 
 export default function HomePage() {
-  // --- Tạo các state để lưu dữ liệu từ form ---
-  const [displayName, setDisplayName] = useState('');
-  const [description, setDescription] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
-  const [facebookLink, setFacebookLink] = useState('');
-  const [youtubeLink, setYoutubeLink] = useState('');
-  const [tiktokLink, setTiktokLink] = useState('');
-  const [githubLink, setGithubLink] = useState('');
-  
-  // --- State cho kết quả và trạng thái loading ---
-  const [isLoading, setIsLoading] = useState(false);
-  const [resultLink, setResultLink] = useState(''); // Link bio sau khi tạo thành công
+    const { currentUser } = useAuth();
+    const navigate = useNavigate();
+    const [profile, setProfile] = useState(null);
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
-  // Hàm được gọi khi người dùng bấm nút "Tạo Bio"
-  const handleCreateBio = async () => {
-    if (!displayName.trim()) {
-      alert('Tên hiển thị là bắt buộc!');
-      return;
-    }
+    useEffect(() => {
+        if (currentUser) {
+            setIsLoadingProfile(true);
+            axios.get(`${process.env.REACT_APP_API_URL}/api/profiles/mine/${currentUser.uid}`)
+                .then(response => { 
+                    setProfile(response.data);
+                })
+                .catch(error => {
+                    if (error.response && error.response.status === 404) {
+                        const newProfile = {
+                            displayName: currentUser.displayName,
+                            avatarUrl: currentUser.photoURL,
+                            userId: currentUser.uid,
+                            blocks: [],
+                        };
+                        setProfile(newProfile); 
+                    }
+                })
+                .finally(() => { setIsLoadingProfile(false); });
+        } else {
+            setProfile(null);
+            setIsLoadingProfile(false);
+        }
+    }, [currentUser]);
 
-    setIsLoading(true);
-    setResultLink('');
-
-    // Gom tất cả dữ liệu thành một đối tượng JSON
-    const profileData = {
-      displayName,
-      description,
-      avatarUrl,
-      facebookLink,
-      youtubeLink,
-      tiktokLink,
-      githubLink
+    const handleProfileUpdate = (updatedProfile) => {
+        setProfile(prev => ({...prev, ...updatedProfile}));
+    };
+    
+    const onFileChange = async (event) => {
+        const file = event.target.files[0];
+        if (file && profile) {
+            setIsUploading(true);
+            const imageUrl = await handleImageUpload(file);
+            if (imageUrl) {
+                const updatedProfileData = {
+                    ...profile,
+                    avatarUrl: imageUrl,
+                };
+                const { blocks, ...profileToSave } = updatedProfileData;
+                
+                try {
+                    await axios.post(`${process.env.REACT_APP_API_URL}/api/profiles`, profileToSave);
+                    setProfile(updatedProfileData);
+                } catch(err) {
+                    alert('Không thể cập nhật ảnh đại diện. Vui lòng thử lại.');
+                }
+            }
+            setIsUploading(false);
+        }
     };
 
-    try {
-      // Gửi request POST đến backend sử dụng biến môi trường
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/profiles`, profileData);
-
-      // Lấy slug từ kết quả backend trả về
-      const slug = response.data.slug;
-      
-      // Tạo link đầy đủ để hiển thị cho người dùng
-      const fullLink = `${window.location.origin}/${slug}`;
-      setResultLink(fullLink);
-
-    } catch (error) {
-      console.error("Lỗi khi tạo bio:", error);
-      alert('Đã xảy ra lỗi. Vui lòng thử lại!');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="App">
-      <div className="form-container">
-        <h1>Tạo Bio Link của bạn</h1>
-        <p>Tạo một trang cá nhân đơn giản để chia sẻ tất cả các liên kết của bạn.</p>
-
-        <input type="text" placeholder="Tên hiển thị của bạn *" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-        <input type="text" placeholder="Link ảnh đại diện (avatar)..." value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} />
-        <textarea placeholder="Mô tả ngắn về bạn..." value={description} onChange={(e) => setDescription(e.target.value)} />
-
-        <hr />
-        <h3>Liên kết Mạng xã hội</h3>
-        <input type="text" placeholder="Link Facebook..." value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} />
-        <input type="text" placeholder="Link YouTube..." value={youtubeLink} onChange={(e) => setYoutubeLink(e.target.value)} />
-        <input type="text" placeholder="Link TikTok..." value={tiktokLink} onChange={(e) => setTiktokLink(e.target.value)} />
-        <input type="text" placeholder="Link GitHub..." value={githubLink} onChange={(e) => setGithubLink(e.target.value)} />
-
-        <button onClick={handleCreateBio} disabled={isLoading}>
-          {isLoading ? 'Đang xử lý...' : '🚀 Tạo Bio của tôi!'}
-        </button>
-
-        {/* Khu vực hiển thị kết quả */}
-        {resultLink && (
-          <div className="result-container">
-            <h3>Tạo thành công!</h3>
-            <p>Link Bio của bạn là:</p>
-            <div className='link-box'>
-              <a href={resultLink} target="_blank" rel="noopener noreferrer">{resultLink}</a>
-              <button onClick={() => navigator.clipboard.writeText(resultLink)}>Sao chép</button>
-            </div>
-            <p className='note'>(Lưu ý: Chức năng xem link sẽ được làm ở bước tiếp theo)</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    const handleSignOut = async () => {
+        try {
+            await doSignOut();
+            navigate('/');
+        } catch (error) {
+            console.error("Lỗi đăng xuất:", error);
+        }
+    };
+  
+    return (
+        <div className="min-h-screen bg-gray-100">
+            {currentUser && (
+                <header className="fixed top-0 right-0 p-4 z-20">
+                    <div className="flex items-center bg-white shadow-lg rounded-full p-2">
+                        <div className="relative group cursor-pointer" onClick={() => !isUploading && fileInputRef.current.click()}>
+                            <img src={profile?.avatarUrl || currentUser.photoURL} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center rounded-full transition-all duration-300">
+                                {isUploading 
+                                    ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    : <BiPencil className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
+                                }
+                            </div>
+                        </div>
+                        <input type="file" ref={fileInputRef} onChange={onFileChange} className="hidden" accept="image/*" disabled={isUploading}/>
+                        <span className="mx-4 font-semibold text-gray-700 hidden sm:block">{profile?.displayName || currentUser.displayName}</span>
+                        <button onClick={handleSignOut} className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-full">Đăng xuất</button>
+                    </div>
+                </header>
+            )}
+            
+            <main className="container mx-auto px-4 py-8 sm:py-24">
+                {currentUser
+                    ? (isLoadingProfile ? <p className="text-center">Đang tải dữ liệu của bạn...</p> : <Dashboard profile={profile} onProfileUpdate={handleProfileUpdate} />)
+                    : <LandingPage onSignIn={signInWithGoogle} />
+                }
+            </main>
+        </div>
+    );
 }
