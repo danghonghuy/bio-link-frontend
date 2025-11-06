@@ -1,5 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  GithubAuthProvider, 
+  FacebookAuthProvider,
+  signInWithPopup, 
+  signOut 
+} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -11,24 +18,27 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_MEASUREMENT_ID,
 };
 
-// --- Phần sửa đổi ---
-// Khởi tạo app TRƯỚC khi sử dụng
 const app = initializeApp(firebaseConfig);
-
-// Lấy analytics SAU KHI đã có app (nếu bạn cần dùng)
-// import { getAnalytics } from "firebase/analytics";
-// const analytics = getAnalytics(app);
-
-// --- Phần còn lại giữ nguyên ---
 export const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
 
+// Google
+const googleProvider = new GoogleAuthProvider();
 export const signInWithGoogle = () => {
-  // Hàm này sẽ mở ra cửa sổ popup đăng nhập của Google
   return signInWithPopup(auth, googleProvider);
 };
 
+// GitHub - THÊM MỚI
+const githubProvider = new GithubAuthProvider();
+export const signInWithGitHub = () => {
+    return signInWithPopup(auth, githubProvider);
+};
+
+// Facebook - THÊM MỚI
+const facebookProvider = new FacebookAuthProvider();
+export const signInWithFacebook = () => {
+    return signInWithPopup(auth, facebookProvider);
+};
+
 export const doSignOut = () => {
-  // Hàm này để đăng xuất
   return signOut(auth);
 };
