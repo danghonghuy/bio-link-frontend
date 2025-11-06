@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { signInWithGoogle, doSignOut } from '../firebase';
 import LandingPage from '../components/LandingPage';
-import Dashboard from '../components/Dashboard';
+import Dashboard from '../components/Dashboard'; // <--- ĐÃ SỬA LẠI ĐƯỜNG DẪN NÀY
 import { BiPencil } from 'react-icons/bi';
 import { FaBolt } from 'react-icons/fa';
 
@@ -44,6 +44,7 @@ export default function HomePage() {
                             displayName: currentUser.displayName,
                             avatarUrl: currentUser.photoURL,
                             userId: currentUser.uid,
+                            slug: '',
                             blocks: [],
                         };
                         setProfile(newProfile); 
@@ -62,16 +63,17 @@ export default function HomePage() {
     
     const onFileChange = async (event) => {
         const file = event.target.files[0];
-        if (file && profile) {
+        if (file && currentUser) {
             setIsUploading(true);
             const imageUrl = await handleImageUpload(file);
             if (imageUrl) {
-                const updatedProfileData = { ...profile, avatarUrl: imageUrl };
-                const { blocks, ...profileToSave } = updatedProfileData;
-                
+                const avatarData = {
+                    userId: currentUser.uid,
+                    avatarUrl: imageUrl,
+                };
                 try {
-                    await axios.post(`${process.env.REACT_APP_API_URL}/api/profiles`, profileToSave);
-                    setProfile(updatedProfileData);
+                    await axios.post(`${process.env.REACT_APP_API_URL}/api/profiles/avatar`, avatarData);
+                    setProfile(prev => ({ ...prev, avatarUrl: imageUrl }));
                 } catch(err) {
                     alert('Không thể cập nhật ảnh đại diện. Vui lòng thử lại.');
                 }
@@ -92,10 +94,10 @@ export default function HomePage() {
     return (
         <div className="min-h-screen bg-gray-100">
             <header className="fixed top-0 left-0 right-0 p-4 z-20 flex justify-between items-center">
-                <h2 className="text-2xl font-bold tracking-tight text-gray-800 flex items-center">
+                <Link to="/" className="text-2xl font-bold tracking-tight text-gray-800 flex items-center">
                     <FaBolt className="text-blue-500 mr-2" />
                     BioLink
-                </h2>
+                </Link>
                 {currentUser && (
                     <div className="flex items-center bg-white shadow-lg rounded-full p-2">
                         <div className="relative group cursor-pointer" onClick={() => !isUploading && fileInputRef.current.click()}>

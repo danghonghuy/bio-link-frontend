@@ -3,11 +3,25 @@
 @tailwind utilities;
 
 body {
-    /* Nền Gradient nhẹ nhàng */
+    font-family: 'Poppins', sans-serif;
+}
+
+.dynamic-default-bg {
     background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
-    font-family: 'Inter', sans-serif; /* Thêm một font chữ đẹp hơn */
+}
+
+@keyframes vaporwave {
+	0% { background-position: 0% 50%; }
+	50% { background-position: 100% 50%; }
+	100% { background-position: 0% 50%; }
+}
+
+.dynamic-vaporwave-bg {
+    background: linear-gradient(-45deg, #ff71ce, #01cdfe, #05ffa1, #b967ff);
+	background-size: 400% 400%;
+	animation: vaporwave 18s ease infinite;
 }
 
 @keyframes gradient {
@@ -15,10 +29,34 @@ body {
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
+/* === NỀN ĐỘNG MỚI === */
 
-/* Thêm Google Font vào public/index.html */
-/* Mở file public/index.html và thêm dòng sau vào trong thẻ <head>:
-   <link rel="preconnect" href="https://fonts.googleapis.com">
-   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-*/
+.dynamic-mono-bg {
+    background: linear-gradient(-45deg, #000000, #434343, #a1a1a1, #ffffff);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+}
+
+.dynamic-charcoal-bg {
+    background: linear-gradient(-45deg, #1e1e1e, #3e3e3e, #1e1e1e, #000000);
+    background-size: 400% 400%;
+    animation: gradient 20s ease infinite;
+}
+
+.dynamic-lava-bg {
+    background: linear-gradient(-45deg, #ff4e00, #ff0000, #d4a22c, #ff4e00);
+    background-size: 400% 400%;
+    animation: gradient 12s ease infinite;
+}
+
+.dynamic-forest-bg {
+    background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #203a43);
+    background-size: 400% 400%;
+    animation: gradient 18s ease infinite;
+}
+
+.dynamic-sky-bg {
+    background: linear-gradient(-45deg, #37a2f5, #b4eaff, #85d5fc, #37a2f5);
+    background-size: 400% 400%;
+    animation: gradient 20s ease infinite;
+}
