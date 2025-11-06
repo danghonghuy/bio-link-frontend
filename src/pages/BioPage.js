@@ -582,20 +582,20 @@ export default function BioPage() {
     const showStats = profile?.showStats !== false;
 
     return (
-        <>
-            <Helmet>
-                <title>{profile.seoTitle || profile.displayName}</title>
-                <meta name="description" content={profile.seoDescription || profile.description} />
-                <meta property="og:title" content={profile.seoTitle || profile.displayName} />
-                <meta property="og:description" content={profile.seoDescription || profile.description} />
-                <meta property="og:image" content={profile.socialImage || profile.avatarUrl} />
-                <meta property="og:url" content={`${window.location.origin}/${profile.slug}`} />
-                <meta property="og:type" content="website" />
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={profile.seoTitle || profile.displayName} />
-                <meta name="twitter:description" content={profile.seoDescription || profile.description} />
-                <meta name="twitter:image" content={profile.socialImage || profile.avatarUrl} />
-            </Helmet>
+      <>
+    <title>{profile.seoTitle || profile.displayName}</title>
+    <meta name="description" content={profile.seoDescription || profile.description} />
+    <meta property="og:title" content={profile.seoTitle || profile.displayName} />
+    <meta property="og:description" content={profile.seoDescription || profile.description} />
+    <meta property="og:image" content={profile.socialImage || profile.avatarUrl} />
+    <meta property="og:url" content={`${window.location.origin}/${profile.slug}`} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={profile.seoTitle || profile.displayName} />
+    <meta name="twitter:description" content={profile.seoDescription || profile.description} />
+    <meta name="twitter:image" content={profile.socialImage || profile.avatarUrl} />
+    
+    <div className={`relative ${pageClassName}`} style={pageStyle}>
             
             <div className={`relative ${pageClassName}`} style={pageStyle}>
                 <FloatingParticles />
