@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { FaLink } from 'react-icons/fa';
+import { getIconForUrl } from '../utils/icons';
 
 export default function BlockRenderer({ block }) {
     const { type, data: jsonData } = block;
@@ -25,13 +25,15 @@ export default function BlockRenderer({ block }) {
                 <a 
                     href={data.url}
                     onClick={handleClick}
-                    onAuxClick={handleClick} // Cho cả chuột giữa
+                    onAuxClick={handleClick}
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center w-full p-4 mb-4 bg-gray-200 text-gray-800 rounded-lg hover:scale-105 transform transition-transform duration-200 shadow-md"
+                    className="flex items-center w-full p-4 mb-4 rounded-xl text-white font-semibold shadow-lg backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300 transform hover:scale-105"
                 >
-                    <FaLink className="mr-4 text-gray-600 flex-shrink-0" />
-                    <span className="font-semibold flex-grow text-center">{data.title}</span>
+                    <span className="text-xl text-white/80 flex-shrink-0 mr-4">
+                      {getIconForUrl(data.url)}
+                    </span>
+                    <span className="flex-grow text-center">{data.title}</span>
                 </a>
             );
 

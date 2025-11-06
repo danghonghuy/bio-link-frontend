@@ -6,6 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { BiPencil, BiTrash, BiMenu, BiBarChart, BiCopy } from 'react-icons/bi';
 import EditBlockModal from './EditBlockModal';
 import { useAuth } from '../context/AuthContext';
+import { getIconForUrl } from '../utils/icons';
 
 function SortableItem({ id, block, stats, onEdit, onDelete }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -23,12 +24,13 @@ function SortableItem({ id, block, stats, onEdit, onDelete }) {
             <button {...attributes} {...listeners} className="cursor-grab p-2 text-gray-500 hover:bg-gray-100 rounded-full focus:outline-none">
                 <BiMenu size={22} />
             </button>
-            <div className="flex-grow ml-3">
+            <div className="text-xl text-gray-500 mx-3">{getIconForUrl(data.url)}</div>
+            <div className="flex-grow">
                 <p className="font-semibold text-gray-800">{data.title || 'Chưa có tiêu đề'}</p>
                 <p className="text-sm text-gray-500 truncate">{data.url || ''}</p>
             </div>
             <div className="flex items-center text-gray-500 text-sm mr-4">
-                <BiBarChart className="mr-1" />
+                <BiBarChart className="mr-1"/>
                 <span>{clickCount}</span>
             </div>
             <button onClick={() => onEdit(block)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-full focus:outline-none"><BiPencil size={20} /></button>
@@ -37,6 +39,9 @@ function SortableItem({ id, block, stats, onEdit, onDelete }) {
     );
 }
 
+// Nội dung còn lại của file Dashboard.js giữ nguyên như phiên bản trước...
+// Bạn chỉ cần thay đổi component SortableItem là đủ. Toàn bộ phần logic
+// của component Dashboard không thay đổi.
 export default function Dashboard({ profile: initialProfile, onProfileUpdate }) {
     const { currentUser } = useAuth();
     const [blocks, setBlocks] = useState(initialProfile?.blocks || []);
@@ -48,7 +53,6 @@ export default function Dashboard({ profile: initialProfile, onProfileUpdate }) 
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
     const bioLink = `${window.location.origin}/${initialProfile?.slug}`;
-
     useEffect(() => {
         setBlocks(initialProfile?.blocks || []);
         setDisplayName(initialProfile?.displayName || '');
@@ -59,12 +63,10 @@ export default function Dashboard({ profile: initialProfile, onProfileUpdate }) 
                 .catch(err => console.error("Không thể tải thống kê:", err));
         }
     }, [initialProfile, currentUser]);
-
     const handleCopyLink = () => {
         navigator.clipboard.writeText(bioLink);
         alert("Đã sao chép link!");
     };
-
     const handleProfileSave = async () => {
         setIsSavingProfile(true);
         const profileData = {
@@ -83,7 +85,6 @@ export default function Dashboard({ profile: initialProfile, onProfileUpdate }) 
             setIsSavingProfile(false);
         }
     };
-
     const handleDragEnd = (event) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
@@ -98,17 +99,14 @@ export default function Dashboard({ profile: initialProfile, onProfileUpdate }) 
             });
         }
     };
-
     const handleOpenModalToAdd = () => {
         setEditingBlock(null);
         setIsModalOpen(true);
     };
-
     const handleOpenModalToEdit = (block) => {
         setEditingBlock(block);
         setIsModalOpen(true);
     };
-
     const handleDeleteBlock = async (blockId) => {
         if (window.confirm("Bạn có chắc muốn xóa khối này không?")) {
             try {
@@ -119,7 +117,6 @@ export default function Dashboard({ profile: initialProfile, onProfileUpdate }) 
             }
         }
     };
-
     const handleSaveBlock = async (data) => {
         const blockData = { type: 'link', data: JSON.stringify(data) };
         try {
@@ -135,12 +132,10 @@ export default function Dashboard({ profile: initialProfile, onProfileUpdate }) 
         }
         setEditingBlock(null);
     };
-
     if (!initialProfile) return <p>Đang tải dashboard...</p>;
-
     return (
-        <>
-            <div className="p-6 bg-white rounded-lg shadow-md mb-8">
+        <div className="space-y-8">
+            <div className="p-6 bg-white rounded-2xl shadow-sm">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">Link Bio của bạn</h2>
                 <div className="flex items-center space-x-2 p-3 bg-gray-100 rounded-lg">
                     <a href={bioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-mono flex-grow truncate">{bioLink}</a>
@@ -149,48 +144,50 @@ export default function Dashboard({ profile: initialProfile, onProfileUpdate }) 
                     </button>
                 </div>
             </div>
-
-            <div className="p-6 bg-white rounded-lg shadow-md mb-8">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Cài đặt chung</h2>
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Tên hiển thị</label>
-                        <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1 space-y-8">
+                    <div className="p-6 bg-white rounded-2xl shadow-sm">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">Cài đặt chung</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Tên hiển thị</label>
+                                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Mô tả</label>
+                                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                            </div>
+                            <div className="text-right">
+                                <button onClick={handleProfileSave} disabled={isSavingProfile} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">
+                                    {isSavingProfile ? 'Đang lưu...' : 'Lưu cài đặt'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Mô tả</label>
-                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
-                    </div>
-                    <div className="text-right">
-                        <button onClick={handleProfileSave} disabled={isSavingProfile} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">
-                            {isSavingProfile ? 'Đang lưu...' : 'Lưu cài đặt'}
+                </div>
+                <div className="lg:col-span-2 p-6 bg-white rounded-2xl shadow-sm">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold text-gray-800">Các khối nội dung</h2>
+                        <button onClick={handleOpenModalToAdd} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">
+                            + Thêm khối mới
                         </button>
                     </div>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                            {blocks.length > 0 ? (
+                                blocks.map(block => (
+                                    <SortableItem key={block.id} id={block.id} block={block} stats={stats} onEdit={handleOpenModalToEdit} onDelete={handleDeleteBlock} />
+                                ))
+                            ) : (
+                                <div className="text-center p-8 border-2 border-dashed rounded-lg text-gray-500">
+                                    <p>Bạn chưa có khối nào. Nhấn "+ Thêm khối mới" để bắt đầu.</p>
+                                </div>
+                            )}
+                        </SortableContext>
+                    </DndContext>
                 </div>
-            </div>
-
-            <div className="p-6 bg-white rounded-lg shadow-md">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-gray-800">Quản lý các khối</h2>
-                    <button onClick={handleOpenModalToAdd} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">
-                        + Thêm khối mới
-                    </button>
-                </div>
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-                        {blocks.length > 0 ? (
-                            blocks.map(block => (
-                                <SortableItem key={block.id} id={block.id} block={block} stats={stats} onEdit={handleOpenModalToEdit} onDelete={handleDeleteBlock} />
-                            ))
-                        ) : (
-                            <div className="text-center p-8 border-2 border-dashed rounded-lg text-gray-500">
-                                <p>Bạn chưa có khối nào. Nhấn "+ Thêm khối mới" để bắt đầu.</p>
-                            </div>
-                        )}
-                    </SortableContext>
-                </DndContext>
             </div>
             <EditBlockModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveBlock} block={editingBlock} />
-        </>
+        </div>
     );
 }

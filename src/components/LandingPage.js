@@ -1,8 +1,16 @@
 import React from 'react';
+import { FaBolt } from 'react-icons/fa';
 
 export default function LandingPage({ onSignIn }) {
   return (
-    <div className="text-center pt-20 max-w-2xl mx-auto">
+    <div className="relative text-center pt-20 max-w-2xl mx-auto">
+      <header className="absolute top-0 left-0 p-4">
+        <h2 className="text-2xl font-bold tracking-tight text-gray-800 flex items-center">
+          <FaBolt className="text-blue-500 mr-2" />
+          BioLink
+        </h2>
+      </header>
+
       <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
         Tạo Bio Link chuyên nghiệp cho riêng bạn
       </h1>

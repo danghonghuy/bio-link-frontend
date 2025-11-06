@@ -6,6 +6,7 @@ import { signInWithGoogle, doSignOut } from '../firebase';
 import LandingPage from '../components/LandingPage';
 import Dashboard from '../components/Dashboard';
 import { BiPencil } from 'react-icons/bi';
+import { FaBolt } from 'react-icons/fa';
 
 const handleImageUpload = async (file) => {
     const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
@@ -65,10 +66,7 @@ export default function HomePage() {
             setIsUploading(true);
             const imageUrl = await handleImageUpload(file);
             if (imageUrl) {
-                const updatedProfileData = {
-                    ...profile,
-                    avatarUrl: imageUrl,
-                };
+                const updatedProfileData = { ...profile, avatarUrl: imageUrl };
                 const { blocks, ...profileToSave } = updatedProfileData;
                 
                 try {
@@ -93,8 +91,12 @@ export default function HomePage() {
   
     return (
         <div className="min-h-screen bg-gray-100">
-            {currentUser && (
-                <header className="fixed top-0 right-0 p-4 z-20">
+            <header className="fixed top-0 left-0 right-0 p-4 z-20 flex justify-between items-center">
+                <h2 className="text-2xl font-bold tracking-tight text-gray-800 flex items-center">
+                    <FaBolt className="text-blue-500 mr-2" />
+                    BioLink
+                </h2>
+                {currentUser && (
                     <div className="flex items-center bg-white shadow-lg rounded-full p-2">
                         <div className="relative group cursor-pointer" onClick={() => !isUploading && fileInputRef.current.click()}>
                             <img src={profile?.avatarUrl || currentUser.photoURL} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
@@ -109,10 +111,10 @@ export default function HomePage() {
                         <span className="mx-4 font-semibold text-gray-700 hidden sm:block">{profile?.displayName || currentUser.displayName}</span>
                         <button onClick={handleSignOut} className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-full">Đăng xuất</button>
                     </div>
-                </header>
-            )}
+                )}
+            </header>
             
-            <main className="container mx-auto px-4 py-8 sm:py-24">
+            <main className="container mx-auto max-w-7xl px-4 pt-24 pb-8">
                 {currentUser
                     ? (isLoadingProfile ? <p className="text-center">Đang tải dữ liệu của bạn...</p> : <Dashboard profile={profile} onProfileUpdate={handleProfileUpdate} />)
                     : <LandingPage onSignIn={signInWithGoogle} />
