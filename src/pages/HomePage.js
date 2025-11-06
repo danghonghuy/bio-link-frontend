@@ -38,8 +38,8 @@ export default function HomePage() {
     };
 
     try {
-      // Gửi request POST đến backend
-      const response = await axios.post('https://dhh-bio.onrender.com/api/profiles', profileData);
+      // Gửi request POST đến backend sử dụng biến môi trường
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/profiles`, profileData);
 
       // Lấy slug từ kết quả backend trả về
       const slug = response.data.slug;
@@ -93,4 +93,3 @@ export default function HomePage() {
     </div>
   );
 }
-

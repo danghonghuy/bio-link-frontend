@@ -14,7 +14,8 @@ export default function BioPage() {
     const fetchProfile = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get(`https://dhh-bio.onrender.com/api/profiles/${slug}`);
+        // Gọi API sử dụng biến môi trường
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profiles/${slug}`);
         setProfile(response.data);
         setError('');
       } catch (err) {
