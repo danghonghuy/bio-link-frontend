@@ -69,3 +69,49 @@ body {
     background-size: 400% 400%;
     animation: gradient 20s ease infinite;
 }
+.dynamic-aurora-bg {
+    background: linear-gradient(-45deg, #00ff87, #60efff, #a162e8, #ff6666);
+    background-size: 400% 400%;
+    animation: gradient 17s ease infinite;
+}
+.dynamic-candy-bg {
+    background: linear-gradient(-45deg, #ffafbd, #ffc3a0, #f6e58d, #ffafbd);
+    background-size: 400% 400%;
+    animation: gradient 16s ease infinite;
+}
+
+.dynamic-sunrise-bg {
+    background: linear-gradient(-45deg, #ff6b6b, #feca57, #ff9f43, #ff6b6b);
+    background-size: 400% 400%;
+    animation: gradient 18s ease infinite;
+}
+
+.dynamic-cyber-bg {
+    background: linear-gradient(-45deg, #00f260, #0575e6, #4f00bc, #000000);
+    background-size: 400% 400%;
+    animation: gradient 20s ease infinite;
+}
+
+.dynamic-deepsea-bg {
+    background: linear-gradient(-45deg, #005c97, #363795, #003973, #005c97);
+    background-size: 400% 400%;
+    animation: gradient 22s ease infinite;
+}
+.dynamic-rose-petal-bg {
+    background: linear-gradient(-45deg, #f8cdda, #ea86b6, #e43a84, #f8cdda);
+    background-size: 400% 400%;
+    animation: gradient 19s ease infinite;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}

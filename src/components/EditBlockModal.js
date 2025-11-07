@@ -1,9 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import React, { Fragment, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { BiUpload, BiX } from 'react-icons/bi';
-
-const socialLinks = [ { label: 'Facebook', placeholder: 'https://facebook.com/your-username', prefix: 'https://facebook.com/' }, { label: 'Instagram', placeholder: 'https://instagram.com/your-username', prefix: 'https://instagram.com/' }, { label: 'X / Twitter', placeholder: 'https://twitter.com/your-handle', prefix: 'https://twitter.com/' }, { label: 'GitHub', placeholder: 'https://github.com/your-username', prefix: 'https://github.com/' }, { label: 'Telegram', placeholder: 'Tên người dùng Telegram', prefix: 'https://t.me/' }, { label: 'Zalo', placeholder: 'Số điện thoại của bạn', prefix: 'https://zalo.me/' }, { label: 'Link tùy chỉnh', placeholder: 'https://your-website.com' }, ];
+import { BiUpload, BiX, BiPlus, BiTrash } from 'react-icons/bi';
 
 const handleImageUpload = async (file) => {
     const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
@@ -29,12 +27,26 @@ export default function EditBlockModal({ isOpen, onClose, onSave, block, modalIn
             if (block && block.data) {
                 setData(JSON.parse(block.data));
             } else {
-                let initialTitle = modalInfo.label === 'Link tùy chỉnh' || modalInfo.label === 'Game khác' ? '' : modalInfo.label;
                  switch (modalInfo.type) {
-                    case 'header': setData({ text: '' }); break;
-                    case 'image': setData({ title: '', url: '' }); break;
-                    case 'youtube': case 'spotify': case 'soundcloud': case 'tiktok': setData({ title: '', url: '' }); break;
-                    default: setData({ title: initialTitle, url: '', thumbnailUrl: '' }); break;
+                    case 'header': 
+                        setData({ text: '' }); 
+                        break;
+                    case 'image': 
+                        setData({ title: '', url: '' }); 
+                        break;
+                    case 'faq': 
+                        setData({ title: 'Các câu hỏi thường gặp', items: [{ question: '', answer: '' }] }); 
+                        break;
+                    case 'youtube': 
+                    case 'spotify': 
+                    case 'soundcloud': 
+                    case 'tiktok': 
+                        setData({ title: '', url: '' }); 
+                        break;
+                    default: 
+                        const initialTitle = modalInfo.label === 'Link tùy chỉnh' || modalInfo.label === 'Game khác' ? '' : modalInfo.label;
+                        setData({ title: initialTitle, url: '', thumbnailUrl: '' }); 
+                        break;
                 }
             }
         }
@@ -52,22 +64,31 @@ export default function EditBlockModal({ isOpen, onClose, onSave, block, modalIn
     }
 
     const handleSave = () => { onSave(data); onClose(); };
-    const getFormInfo = () => {
-        const info = socialLinks.find(item => item.label === modalInfo.label);
-        let currentBlockType = block ? block.type : modalInfo.type;
-        return { placeholder: info?.placeholder || 'https://...', type: currentBlockType }
+    
+    const handleFaqChange = (index, field, value) => {
+        const newItems = [...data.items];
+        newItems[index][field] = value;
+        setData(prev => ({ ...prev, items: newItems }));
     };
 
-    const { placeholder, type: blockType } = getFormInfo();
+    const addFaqItem = () => {
+        setData(prev => ({ ...prev, items: [...prev.items, { question: '', answer: '' }] }));
+    };
+
+    const removeFaqItem = (indexToRemove) => {
+        setData(prev => ({ ...prev, items: prev.items.filter((_, index) => index !== indexToRemove) }));
+    };
     
     const renderFormFields = () => {
         const inputClass = "w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500";
         const titleInput = (placeholderText = "Tiêu đề") => ( <input type="text" value={data.title || ''} onChange={(e) => setData({ ...data, title: e.target.value })} placeholder={placeholderText} className={inputClass} /> );
-        const urlInput = (placeholderText) => ( <input type="url" value={data.url || ''} onChange={(e) => setData({ ...data, url: e.target.value })} placeholder={placeholderText} className={inputClass} /> );
+        const urlInput = (placeholderText) => ( <input type="text" value={data.url || ''} onChange={(e) => setData({ ...data, url: e.target.value })} placeholder={placeholderText} className={inputClass} /> );
+        const blockType = block ? block.type : modalInfo.type;
 
         switch (blockType) {
             case 'header':
                 return <input type="text" value={data.text || ''} onChange={(e) => setData({ text: e.target.value })} placeholder="Nội dung tiêu đề" className={inputClass} />;
+            
             case 'image':
                 return (
                     <div className="space-y-4">
@@ -77,12 +98,51 @@ export default function EditBlockModal({ isOpen, onClose, onSave, block, modalIn
                        {titleInput("Chú thích cho ảnh (tùy chọn)")}
                     </div>
                 )
+
+            case 'faq':
+                return (
+                    <div className="space-y-4">
+                        {titleInput("Tiêu đề khối FAQ (tùy chọn)")}
+                        <div className="max-h-80 overflow-y-auto pr-2 border-t pt-4">
+                        {data.items?.map((item, index) => (
+                            <div key={index} className="p-3 border rounded-lg space-y-2 bg-gray-50 relative mb-4">
+                                <input
+                                    type="text"
+                                    value={item.question}
+                                    onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
+                                    placeholder={`Câu hỏi ${index + 1}`}
+                                    className={`${inputClass} font-semibold`}
+                                />
+                                <textarea
+                                    value={item.answer}
+                                    onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
+                                    placeholder="Nội dung trả lời..."
+                                    rows={3}
+                                    className={`${inputClass} text-sm`}
+                                />
+                                {data.items.length > 1 && (
+                                     <button onClick={() => removeFaqItem(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow">
+                                         <BiTrash size={16}/>
+                                     </button>
+                                )}
+                            </div>
+                        ))}
+                        </div>
+                        <button onClick={addFaqItem} className="flex items-center gap-2 w-full justify-center px-4 py-2 border-2 border-dashed rounded-lg text-sm text-gray-600 hover:bg-gray-100">
+                            <BiPlus /> Thêm câu hỏi
+                        </button>
+                    </div>
+                );
+
             case 'youtube': return <div className="space-y-4">{titleInput("Tiêu đề video (tùy chọn)")}{urlInput("Dán link video YouTube")}</div>;
             case 'spotify': return <div className="space-y-4">{titleInput("Tiêu đề nhạc (tùy chọn)")}{urlInput("Dán link bài hát/playlist Spotify")}</div>;
             case 'soundcloud': return <div className="space-y-4">{titleInput("Tiêu đề nhạc (tùy chọn)")}{urlInput("Dán link bài hát/playlist SoundCloud")}</div>;
             case 'tiktok': return <div className="space-y-4">{titleInput("Tiêu đề video (tùy chọn)")}{urlInput("Dán link video TikTok")}</div>;
+            
             case 'link':
             default:
+                const allLinks = []; // placeholder in case socialLinks is not passed
+                const { placeholder } = allLinks.find(item => item.label === modalInfo.label) || { placeholder: 'https://...'};
                 return (
                     <div className="flex items-center gap-x-4">
                         <div className="flex-shrink-0">

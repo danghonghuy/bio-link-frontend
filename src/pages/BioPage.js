@@ -2,83 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-
-import { BiBarChart, BiTrendingUp, BiLink } from 'react-icons/bi';
-import { 
-    FaEye, 
-    FaFire, 
-    FaYoutube, 
-    FaSpotify, 
-    FaSoundcloud, 
-    FaTiktok,
-    FaFacebookF,
-    FaInstagram,
-    FaTwitter,
-    FaGithub,
-    FaTelegramPlane,
-    FaLinkedinIn,
-    FaDiscord,
-    FaWhatsapp,
-    FaPinterest,
-    FaSnapchatGhost,
-    FaRedditAlien,
-    FaTwitch
-} from 'react-icons/fa';
-import { SiZalo } from 'react-icons/si';
+import BlockRenderer from '../components/BlockRenderer'; 
+import { BiTrendingUp } from 'react-icons/bi';
+import { FaEye,FaCheckCircle } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 
-// Import your original utilities
-const getIconForUrl = (url) => {
-    if (!url) return <BiLink className="text-2xl" />;
-    
-    // Social Media Platforms
-    if (url.includes('facebook.com')) return <FaFacebookF className="text-2xl text-blue-600" />;
-    if (url.includes('instagram.com')) return <FaInstagram className="text-2xl text-pink-600" />;
-    if (url.includes('twitter.com') || url.includes('x.com')) return <FaTwitter className="text-2xl text-sky-500" />;
-    if (url.includes('linkedin.com')) return <FaLinkedinIn className="text-2xl text-blue-700" />;
-    if (url.includes('tiktok.com')) return <FaTiktok className="text-2xl text-white" />;
-    if (url.includes('youtube.com') || url.includes('youtu.be')) return <FaYoutube className="text-2xl text-red-600" />;
-    
-    // Messaging Apps
-    if (url.includes('telegram') || url.includes('t.me')) return <FaTelegramPlane className="text-2xl text-sky-500" />;
-    if (url.includes('zalo.me')) return <SiZalo className="text-2xl text-blue-600" />;
-    if (url.includes('whatsapp.com') || url.includes('wa.me')) return <FaWhatsapp className="text-2xl text-green-500" />;
-    if (url.includes('discord')) return <FaDiscord className="text-2xl text-indigo-600" />;
-    
-    // Developer Platforms
-    if (url.includes('github.com')) return <FaGithub className="text-2xl text-gray-900" />;
-    
-    // Other Platforms
-    if (url.includes('spotify.com')) return <FaSpotify className="text-2xl text-green-500" />;
-    if (url.includes('soundcloud.com')) return <FaSoundcloud className="text-2xl text-orange-600" />;
-    if (url.includes('pinterest.com')) return <FaPinterest className="text-2xl text-red-600" />;
-    if (url.includes('snapchat.com')) return <FaSnapchatGhost className="text-2xl text-yellow-400" />;
-    if (url.includes('reddit.com')) return <FaRedditAlien className="text-2xl text-orange-600" />;
-    if (url.includes('twitch.tv')) return <FaTwitch className="text-2xl text-purple-600" />;
-    
-    return <BiLink className="text-2xl" />;
-};
-
-const getYouTubeId = (url) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-};
-
-const getSpotifyEmbedUrl = (url) => {
-    try {
-        const urlObject = new URL(url);
-        if (urlObject.hostname === 'open.spotify.com') {
-            urlObject.pathname = '/embed' + urlObject.pathname;
-            return urlObject.toString();
-        }
-    } catch (e) {
-        return null;
-    }
-    return null;
-};
-
-// Floating particles background
 const FloatingParticles = () => {
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -106,352 +34,6 @@ const FloatingParticles = () => {
     );
 };
 
-// SoundCloud Embed Component
-const SoundCloudEmbed = ({ url }) => {
-    const [embedHtml, setEmbedHtml] = useState(null);
-    const [error, setError] = useState(null);
-    
-    useEffect(() => {
-        if (!url) return;
-        let isMounted = true;
-        
-        const fetchEmbed = async () => {
-            setError(null);
-            try {
-                const response = await fetch(`https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(url)}`);
-                if (!response.ok) throw new Error(`API returned status ${response.status}`);
-                const data = await response.json();
-                if (isMounted && data.html) {
-                    setEmbedHtml(data.html);
-                }
-            } catch (error) {
-                if (isMounted) setError("Không thể tải nội dung SoundCloud. Link có thể không hợp lệ.");
-                console.error("SoundCloud oEmbed Error:", error);
-            }
-        };
-        
-        fetchEmbed();
-        return () => { isMounted = false; };
-    }, [url]);
-    
-    if (error) return <div className="text-center text-red-100 p-2 bg-red-500/30 rounded-lg">{error}</div>;
-    if (embedHtml === null) return <div className="w-full h-44 bg-white/10 animate-pulse rounded-xl"></div>;
-    return <div dangerouslySetInnerHTML={{ __html: embedHtml }} />;
-};
-
-// TikTok Embed Component
-const TikTokEmbed = ({ url }) => {
-    const ref = React.useRef(null);
-    const [isLoading, setIsLoading] = useState(true);
-    
-    useEffect(() => {
-        if (!url) return;
-        if (ref.current) ref.current.innerHTML = "";
-        
-        const fetchAndRender = async () => {
-            try {
-                const response = await axios.get(`https://www.tiktok.com/oembed?url=${url}`, { timeout: 5000 });
-                const data = response.data;
-                
-                if (ref.current && data.html) {
-                    ref.current.innerHTML = data.html;
-                    const scriptTag = ref.current.querySelector('script');
-                    
-                    if (scriptTag) {
-                        const newScript = document.createElement('script');
-                        newScript.src = scriptTag.src;
-                        newScript.async = true;
-                        newScript.onload = () => { setIsLoading(false); };
-                        scriptTag.remove();
-                        document.body.appendChild(newScript);
-                        return () => {
-                            if (document.body.contains(newScript)) document.body.removeChild(newScript);
-                        };
-                    }
-                }
-                setIsLoading(false);
-            } catch (error) {
-                console.error("TikTok embed error:", error);
-                if(ref.current) ref.current.innerHTML = "<p class='text-center text-red-300 p-4'>Không thể tải video TikTok.</p>";
-                setIsLoading(false);
-            }
-        };
-        
-        fetchAndRender();
-    }, [url]);
-    
-    return (
-        <div className="relative w-full max-w-[325px] sm:max-w-xs mx-auto">
-            {isLoading && <div className="absolute inset-0 bg-white/10 animate-pulse rounded-xl min-h-[500px]"></div>}
-            <div ref={ref} className={`transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}></div>
-        </div>
-    );
-};
-
-// Enhanced BlockRenderer
-const BlockRenderer = ({ block, customStyles, showClickCount, clickCount }) => {
-    const { type, data: jsonData } = block;
-    const data = JSON.parse(jsonData);
-    
-    const handleClick = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/api/blocks/${block.id}/click`);
-        } catch (err) {
-            console.error('Error recording click:', err);
-        } finally {
-            setTimeout(() => {
-                window.open(data.url, '_blank', 'noopener,noreferrer');
-            }, 100);
-        }
-    };
-
-    const Title = ({icon, defaultTitle}) => {
-        const titleText = data.title || defaultTitle;
-        if (!titleText) return null;
-        
-        return (
-            <div className="flex items-center justify-center gap-x-2 mb-3">
-                {icon}
-                <h3 className="text-xl font-bold text-white">{titleText}</h3>
-            </div>
-        )
-    };
-
-    switch (type) {
-        case 'link':
-            const hasThumb = !!data.thumbnailUrl;
-            
-            return (
-                <motion.div
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="relative group"
-                >
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-500"></div>
-                    
-                    <a
-                        href={data.url}
-                        onClick={handleClick}
-                        onAuxClick={handleClick}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`relative flex items-center w-full p-5 text-white font-semibold shadow-2xl backdrop-blur-xl transition-all duration-300 overflow-hidden ${
-                            hasThumb ? 'min-h-[140px]' : 'bg-white/10 hover:bg-white/20'
-                        } ${customStyles?.buttonStyle || 'rounded-2xl'} border border-white/20`}
-                        style={hasThumb ? {
-                            backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%), url(${data.thumbnailUrl})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                        } : {}}
-                    >
-                        {/* Shimmer effect */}
-                        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                        
-                        {showClickCount && clickCount > 0 && (
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500/90 to-pink-500/90 backdrop-blur-md rounded-full text-xs font-bold text-white shadow-lg z-20"
-                            >
-                                <FaFire className="text-yellow-300" />
-                                <span>{clickCount.toLocaleString()}</span>
-                            </motion.div>
-                        )}
-                        
-                        <div className="flex items-center w-full gap-4 z-10">
-                            <motion.div
-                                whileHover={{ scale: 1.1, rotate: [0, -10, 10, -10, 0] }}
-                                transition={{ duration: 0.5 }}
-                                className="flex-shrink-0 bg-white p-3.5 rounded-xl shadow-lg backdrop-blur-sm"
-                            >
-                                {getIconForUrl(data.url)}
-                            </motion.div>
-                            
-                            <div className="flex-grow">
-                                <div className="text-lg font-bold tracking-wide">{data.title}</div>
-                                {hasThumb && (
-                                    <div className="text-xs text-white/70 mt-1">Tap to explore →</div>
-                                )}
-                            </div>
-                            
-                            <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <HiSparkles className="text-2xl text-yellow-300" />
-                            </div>
-                        </div>
-                    </a>
-                </motion.div>
-            );
-            
-        case 'header':
-            return (
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="relative my-6"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-xl"></div>
-                    <h2 className="relative text-2xl font-black text-center text-white py-4 tracking-wide">
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
-                            {data.text}
-                        </span>
-                    </h2>
-                </motion.div>
-            );
-            
-        case 'image':
-            return (
-                <motion.div
-                    className="w-full group"
-                    whileHover={{ scale: 1.01 }}
-                >
-                    <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl opacity-50 group-hover:opacity-100 blur transition duration-500"></div>
-                        <div className="relative rounded-2xl overflow-hidden border border-white/20">
-                            <img
-                                src={data.url}
-                                alt={data.title || 'Hình ảnh'}
-                                className="w-full h-auto object-cover"
-                            />
-                        </div>
-                    </div>
-                    {data.title && (
-                        <p className="text-center text-sm text-white/80 mt-3 font-medium">{data.title}</p>
-                    )}
-                </motion.div>
-            );
-            
-        case 'youtube': {
-            const videoId = getYouTubeId(data.url);
-            if (!videoId) return (
-                <p className="text-center text-red-100 p-2 bg-red-500/30 rounded-lg">
-                    Link YouTube không hợp lệ.
-                </p>
-            );
-            
-            return (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="w-full group"
-                >
-                    <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-pink-500 rounded-2xl opacity-50 group-hover:opacity-100 blur transition duration-500"></div>
-                        
-                        <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/20">
-                            <Title
-                                icon={<FaYoutube className="text-red-500 text-2xl" />}
-                                defaultTitle="Video YouTube"
-                            />
-                            
-                            <div className="aspect-video">
-                                <iframe
-                                    width="100%"
-                                    height="100%"
-                                    src={`https://www.youtube.com/embed/${videoId}`}
-                                    title={data.title || "YouTube video"}
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                ></iframe>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            );
-        }
-        
-        case 'spotify': {
-            const spotifyEmbedUrl = getSpotifyEmbedUrl(data.url);
-            if (!spotifyEmbedUrl) return (
-                <p className="text-center text-red-100 p-2 bg-red-500/30 rounded-lg">
-                    Link Spotify không hợp lệ.
-                </p>
-            );
-            
-            return (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="w-full group"
-                >
-                    <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl opacity-50 group-hover:opacity-100 blur transition duration-500"></div>
-                        
-                        <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/20 p-4">
-                            <Title
-                                icon={<FaSpotify className="text-green-500 text-2xl" />}
-                                defaultTitle="Nhạc trên Spotify"
-                            />
-                            
-                            <iframe
-                                title={data.title || "Spotify Embed"}
-                                style={{ borderRadius: '12px' }}
-                                src={spotifyEmbedUrl}
-                                width="100%"
-                                height="152"
-                                frameBorder="0"
-                                allowFullScreen=""
-                                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                loading="lazy"
-                            ></iframe>
-                        </div>
-                    </div>
-                </motion.div>
-            );
-        }
-        
-        case 'soundcloud': {
-            if(!data.url) return null;
-            
-            return (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="w-full group"
-                >
-                    <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl opacity-50 group-hover:opacity-100 blur transition duration-500"></div>
-                        
-                        <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/20 p-4">
-                            <Title
-                                icon={<FaSoundcloud className="text-orange-500 text-2xl" />}
-                                defaultTitle="Nhạc trên SoundCloud"
-                            />
-                            
-                            <div className="[&>div>iframe]:rounded-xl">
-                                <SoundCloudEmbed url={data.url} />
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            );
-        }
-        
-        case 'tiktok': {
-            if (!data.url) return null;
-            
-            return (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="w-full"
-                >
-                    <Title
-                        icon={<FaTiktok className="text-white text-xl" />}
-                        defaultTitle="Video TikTok"
-                    />
-                    <TikTokEmbed url={data.url} />
-                </motion.div>
-            );
-        }
-        
-        default:
-            return null;
-    }
-};
-
-// Main Component
 export default function BioPage() {
     const { slug } = useParams();
     const [profile, setProfile] = useState(null);
@@ -459,31 +41,49 @@ export default function BioPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
-    useEffect(() => {
+ useEffect(() => {
         const fetchProfileAndRecordView = async () => {
-            if (!slug) { setError('URL không hợp lệ.'); setIsLoading(false); return; }
+            if (!slug) { 
+                setError('URL không hợp lệ.'); 
+                setIsLoading(false); 
+                return; 
+            }
             setIsLoading(true);
+            setError(''); // Reset lỗi trước mỗi lần fetch
+
             try {
+                // Bước 1: Luôn lấy dữ liệu profile mới nhất để hiển thị cho người dùng.
+                // Thao tác này phải được ưu tiên để trang tải nhanh.
                 const profilePromise = axios.get(`${process.env.REACT_APP_API_URL}/api/profiles/${slug}`);
-                
+
+                // Bước 2: Gửi yêu cầu ghi nhận lượt xem một cách độc lập ("fire-and-forget").
+                // Chúng ta không cần đợi yêu cầu này hoàn thành để hiển thị trang.
+                // Lỗi deadlock ở backend đã được sửa, nên việc gọi đồng thời đã an toàn.
                 axios.post(`${process.env.REACT_APP_API_URL}/api/profiles/${slug}/view`).catch(err => {
-                    console.error("Lỗi khi ghi nhận lượt xem:", err);
+                    // Lỗi ghi nhận lượt xem không phải là lỗi nghiêm trọng, chỉ cần log ra console.
+                    // Không nên hiển thị màn hình lỗi cho người dùng chỉ vì không đếm được view.
+                    console.error("Lỗi khi ghi nhận lượt xem (không ảnh hưởng hiển thị):", err);
                 });
                 
+                // Bước 3: Đợi dữ liệu profile từ Bước 1 trả về.
                 const profileResponse = await profilePromise;
-                setProfile(profileResponse.data);
+                const fetchedProfile = profileResponse.data;
+                setProfile(fetchedProfile);
                 
-                if (profileResponse.data.userId) {
+                // Bước 4: Dùng dữ liệu profile vừa nhận được để lấy stats.
+                if (fetchedProfile.userId) {
                     try {
                         const statsResponse = await axios.get(
-                            `${process.env.REACT_APP_API_URL}/api/profiles/stats/${profileResponse.data.userId}`
+                            `${process.env.REACT_APP_API_URL}/api/profiles/stats/${fetchedProfile.userId}`
                         );
                         setStats(statsResponse.data);
                     } catch (err) {
                         console.error("Lỗi khi tải thống kê:", err);
+                        // Stats không tải được cũng không phải lỗi nghiêm trọng để dừng cả trang.
                     }
                 }
             } catch (err) {
+                // Chỉ xử lý các lỗi nghiêm trọng (không tìm thấy profile, lỗi server 500 khi lấy data)
                 if (err.response && err.response.status === 404) {
                     setError('Không tìm thấy profile này.');
                 } else {
@@ -494,8 +94,112 @@ export default function BioPage() {
                 setIsLoading(false);
             }
         };
+
         fetchProfileAndRecordView();
     }, [slug]);
+
+    const Guestbook = () => {
+        const [messages, setMessages] = useState([]);
+        const [newMessage, setNewMessage] = useState({ authorName: '', messageContent: '', isPublic: true });
+        const [isSubmitting, setIsSubmitting] = useState(false);
+        const [submitStatus, setSubmitStatus] = useState({ success: false, message: ''});
+        
+        useEffect(() => {
+            const fetchPublicMessages = async () => {
+                try {
+                    const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/profiles/${slug}/guestbook/public`);
+                    setMessages(res.data);
+                } catch (error) {
+                    console.error("Lỗi tải tin nhắn công khai:", error);
+                }
+            };
+            if(slug) {
+                fetchPublicMessages();
+            }
+        }, [slug]);
+
+        const handleChange = (e) => {
+            const { name, value, type, checked } = e.target;
+            setNewMessage(prev => ({...prev, [name]: type === 'checkbox' ? checked : value }));
+        };
+        
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            if(!newMessage.authorName.trim() || !newMessage.messageContent.trim()) {
+                setSubmitStatus({ success: false, message: 'Vui lòng nhập tên và nội dung lời nhắn.'});
+                return;
+            }
+            
+            setIsSubmitting(true);
+            setSubmitStatus({ success: false, message: ''});
+            try {
+                const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/profiles/${slug}/guestbook`, newMessage);
+                if (newMessage.isPublic) {
+                    setMessages(prev => [res.data, ...prev]);
+                }
+                setNewMessage({ authorName: '', messageContent: '', isPublic: true });
+                setSubmitStatus({ success: true, message: 'Gửi lời nhắn thành công! Cảm ơn bạn.'});
+            } catch (error) {
+                setSubmitStatus({ success: false, message: 'Gửi thất bại, vui lòng thử lại.'});
+            } finally {
+                setIsSubmitting(false);
+            }
+        };
+
+        const formatDate = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        };
+        
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                className="w-full mt-12 bg-black/20 backdrop-blur-md rounded-2xl p-6 border border-white/20"
+            >
+                <h3 className="text-xl font-bold text-white text-center mb-4">Để lại lời nhắn</h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <input type="text" name="authorName" value={newMessage.authorName} onChange={handleChange} placeholder="Tên của bạn" className="w-full bg-white/10 text-white placeholder-white/50 rounded-lg p-3 border-none focus:ring-2 focus:ring-blue-400" />
+                    <textarea name="messageContent" value={newMessage.messageContent} onChange={handleChange} placeholder="Viết lời nhắn ở đây..." rows={4} className="w-full bg-white/10 text-white placeholder-white/50 rounded-lg p-3 border-none focus:ring-2 focus:ring-blue-400 resize-none"></textarea>
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                         <div className="flex items-center gap-2">
+                             <input type="checkbox" id="isPublic" name="isPublic" checked={newMessage.isPublic} onChange={handleChange} className="w-4 h-4 rounded text-blue-500 bg-white/20 border-white/30 focus:ring-blue-500" />
+                             <label htmlFor="isPublic" className="text-sm text-white/80">Hiển thị công khai</label>
+                         </div>
+                        <button type="submit" disabled={isSubmitting} className="px-5 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors">
+                            {isSubmitting ? 'Đang gửi...' : 'Gửi lời nhắn'}
+                        </button>
+                    </div>
+                    {submitStatus.message && (
+                         <p className={`text-sm text-center pt-2 ${submitStatus.success ? 'text-green-300' : 'text-red-300'}`}>{submitStatus.message}</p>
+                    )}
+                </form>
+
+                {messages.length > 0 && (
+                    <div className="mt-8 pt-6 border-t border-white/20">
+                         <h4 className="text-lg font-semibold text-white text-center mb-4">Sổ lưu bút</h4>
+                        <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
+                           {messages.map(msg => (
+    <div key={msg.id} className={`p-3 rounded-lg animate-fade-in ${msg.isAuthor ? 'bg-blue-500/20 border border-blue-400' : 'bg-white/5'}`}>
+        <p className="text-sm text-white" style={{whiteSpace: 'pre-wrap'}}>{msg.messageContent}</p>
+        <div className="flex items-center justify-between mt-2">
+            <p className="text-xs font-semibold text-blue-300 flex items-center gap-1">
+                {msg.isAuthor && <FaCheckCircle size={12} className="text-blue-300" />} {/* Icon nhận diện */}
+                __{msg.authorName}
+                {msg.isAuthor && <span className="ml-1 text-xs font-normal text-white/70">(Tác giả)</span>} {/* Huy hiệu */}
+            </p>
+            <p className="text-xs text-white/50">{formatDate(msg.createdAt)}</p>
+        </div>
+    </div>
+))}
+                        </div>
+                    </div>
+                )}
+            </motion.div>
+        );
+    }
+
 
     if (isLoading) {
         return (
@@ -583,24 +287,21 @@ export default function BioPage() {
 
     return (
       <>
-    <title>{profile.seoTitle || profile.displayName}</title>
-    <meta name="description" content={profile.seoDescription || profile.description} />
-    <meta property="og:title" content={profile.seoTitle || profile.displayName} />
-    <meta property="og:description" content={profile.seoDescription || profile.description} />
-    <meta property="og:image" content={profile.socialImage || profile.avatarUrl} />
-    <meta property="og:url" content={`${window.location.origin}/${profile.slug}`} />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={profile.seoTitle || profile.displayName} />
-    <meta name="twitter:description" content={profile.seoDescription || profile.description} />
-    <meta name="twitter:image" content={profile.socialImage || profile.avatarUrl} />
+        <title>{profile.seoTitle || profile.displayName}</title>
+        <meta name="description" content={profile.seoDescription || profile.description} />
+        <meta property="og:title" content={profile.seoTitle || profile.displayName} />
+        <meta property="og:description" content={profile.seoDescription || profile.description} />
+        <meta property="og:image" content={profile.socialImage || profile.avatarUrl} />
+        <meta property="og:url" content={`${window.location.origin}/${profile.slug}`} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={profile.seoTitle || profile.displayName} />
+        <meta name="twitter:description" content={profile.seoDescription || profile.description} />
+        <meta name="twitter:image" content={profile.socialImage || profile.avatarUrl} />
     
-    <div className={`relative ${pageClassName}`} style={pageStyle}>
-            
-            <div className={`relative ${pageClassName}`} style={pageStyle}>
+        <div className={`relative ${pageClassName}`} style={pageStyle}>
                 <FloatingParticles />
                 
-                {/* Gradient orbs - only if using default background */}
                 {!backgroundValue.startsWith('http') && !backgroundValue.startsWith('linear-gradient') && (
                     <>
                         <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
@@ -609,7 +310,6 @@ export default function BioPage() {
                 )}
                 
                 <div className="relative z-10 w-full max-w-2xl mx-auto">
-                    {/* Profile Header */}
                     <motion.div
                         className="text-center mb-12 mt-8"
                         initial={{ opacity: 0, y: -50 }}
@@ -645,17 +345,27 @@ export default function BioPage() {
                             transition={{ delay: 0.2 }}
                             style={{textShadow: '0 0 30px rgba(255,255,255,0.5), 0 0 60px rgba(255,255,255,0.3)'}}
                         >
-                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
-                                {profile.displayName}
-                            </span>
+                            {profile.fontColor && profile.fontColor.toUpperCase() !== '#FFFFFF' ? (
+                                <span style={{ color: profile.fontColor }}>
+                                    {profile.displayName}
+                                </span>
+                            ) : (
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
+                                    {profile.displayName}
+                                </span>
+                            )}
                         </motion.h1>
 
                         {profile.description && (
                             <motion.p
-                                className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto font-medium"
+                                className="text-lg sm:text-xl max-w-2xl mx-auto font-medium"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.3 }}
+                                style={{ 
+                                    color: profile.fontColor || '#FFFFFF',
+                                    opacity: 0.9 
+                                }}
                             >
                                 {profile.description}
                             </motion.p>
@@ -709,7 +419,6 @@ export default function BioPage() {
                         </AnimatePresence>
                     </motion.div>
 
-                    {/* Blocks */}
                     <motion.div
                         className="w-full space-y-4 mb-12"
                         initial="hidden"
@@ -737,7 +446,10 @@ export default function BioPage() {
                                 >
                                     <BlockRenderer
                                         block={block}
-                                        customStyles={{ buttonStyle: profile.buttonStyle }}
+                                        customStyles={{ 
+                                            buttonStyle: profile.buttonStyle, 
+                                            buttonShape: profile.buttonShape 
+                                        }}
                                         showClickCount={showStats}
                                         clickCount={stats?.[block.id] || 0}
                                     />
@@ -760,7 +472,8 @@ export default function BioPage() {
                         )}
                     </motion.div>
 
-                    {/* Footer */}
+                    <Guestbook />
+
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
