@@ -621,17 +621,25 @@ export default function Dashboard({ profile: initialProfile, onProfileUpdate }) 
     setEditingBlock(null);
   };
 
-  const handleToggleStatus = async (blockId, isEnabled) => {
+const handleToggleStatus = async (blockId, isEnabled) => {
     const originalBlocks = [...blocks];
+    // Vẫn giữ lại optimistic update để UI phản hồi ngay lập tức
     setBlocks((prev) => prev.map((b) => (b.id === blockId ? { ...b, isEnabled } : b)));
     try {
-      await axios.patch(`${process.env.REACT_APP_API_URL}/api/blocks/${blockId}/status`, { isEnabled });
+      // Nhận lại response từ server sau khi gọi API
+      const response = await axios.patch(`${process.env.REACT_APP_API_URL}/api/blocks/${blockId}/status`, { isEnabled });
+      
+      // *** DÒNG CODE QUAN TRỌNG NHẤT ĐƯỢC THÊM VÀO ***
+      // Cập nhật lại state với dữ liệu chính xác nhất từ server trả về
+      setBlocks(prev => prev.map(b => b.id === blockId ? response.data : b));
+
       toast.success(`Đã ${isEnabled ? "bật" : "tắt"} khối.`);
     } catch (error) {
       toast.error("Cập nhật trạng thái thất bại.");
+      // Nếu có lỗi, trả lại trạng thái ban đầu
       setBlocks(originalBlocks);
     }
-  };
+};
   const handleSelectBlock = (blockId) => { setSelectedBlocks((prev) => prev.includes(blockId) ? prev.filter((id) => id !== blockId) : [...prev, blockId]); };
   const handleBulkAction = async (action) => {
     const originalBlocks = [...blocks];
