@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -12,13 +12,11 @@ import Settings from '../components/Settings';
 import AccountSettings from '../components/AccountSettings';
 import Inbox from '../components/Inbox';
 import ThemeToggle from '../components/ThemeToggle';
-import { BiPencil } from 'react-icons/bi';
+import { BiPencil, BiChevronDown, BiGridAlt } from 'react-icons/bi';
 import { FaBolt, FaCheckCircle, FaInfoCircle, FaExclamationTriangle, FaSignOutAlt, FaUser, FaCog, FaChartLine, FaLink, FaInbox, FaUserShield } from 'react-icons/fa';
-import { Tab } from '@headlessui/react';
+import { Tab, Menu, Transition } from '@headlessui/react';
+import { motion } from 'framer-motion';
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
 
 const Toast = ({ message, type = 'success', onClose }) => {
     useEffect(() => {
@@ -80,6 +78,15 @@ export default function HomePage() {
     const [authMessage, setAuthMessage] = useState("");
     const [toasts, setToasts] = useState([]);
     const profileMenuRef = useRef(null);
+
+    const navItems = [
+        { name: 'Quản lý', icon: <BiGridAlt className="h-5 w-5" /> },
+        { name: 'Phân tích', icon: <FaChartLine className="h-5 w-5" /> },
+        { name: 'Hồ sơ', icon: <FaUser className="h-5 w-5" /> },
+        { name: 'Tùy chỉnh', icon: <FaCog className="h-5 w-5" /> },
+        { name: 'Tài khoản', icon: <FaUserShield className="h-5 w-5" /> },
+        { name: 'Hòm thư', icon: <FaInbox className="h-5 w-5" /> },
+    ];
 
     const showToast = (message, type = 'success') => { const id = Math.random().toString(36).substring(2, 9); setToasts(prev => [...prev, { id, message, type }]); };
     const removeToast = (id) => { setToasts(prev => prev.filter(toast => toast.id !== id)); };
@@ -150,14 +157,56 @@ export default function HomePage() {
                         </div>
                      ) : (
                          <Tab.Group selectedIndex={selectedTab} onChange={handleTabChange}>
-                            <Tab.List className="flex flex-col sm:flex-row gap-2 p-1.5 mb-8 max-w-5xl mx-auto bg-gray-100 dark:bg-gray-800 rounded-xl">
-                                <Tab className={({ selected }) => classNames('w-full sm:flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none', selected ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-900/20')}>Quản lý</Tab>
-                                <Tab className={({ selected }) => classNames('w-full sm:flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none', selected ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-900/20')}>Phân tích</Tab>
-                                <Tab className={({ selected }) => classNames('w-full sm:flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none', selected ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-900/20')}>Hồ sơ</Tab>
-                                <Tab className={({ selected }) => classNames('w-full sm:flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none', selected ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-900/20')}>Tùy chỉnh</Tab>
-                                <Tab className={({ selected }) => classNames('w-full sm:flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none', selected ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-900/20')}><div className="flex items-center justify-center gap-2"><FaUserShield/> Tài khoản</div></Tab>
-                                <Tab className={({ selected }) => classNames('w-full sm:flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none relative', selected ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-900/20')}><div className="flex items-center justify-center gap-2"><FaInbox/> Hòm thư</div>{unreadCount > 0 && (<span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">{unreadCount > 9 ? '9+' : unreadCount}</span>)}</Tab>
-                            </Tab.List>
+                            <div className="mb-8 max-w-md mx-auto">
+                                <Menu as="div" className="relative inline-block text-left w-full">
+                                    <div>
+                                        <Menu.Button className="inline-flex w-full justify-between items-center gap-x-3 rounded-xl bg-white dark:bg-gray-800 px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-md ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                            <div className="flex items-center gap-3">
+                                                {navItems[selectedTab].icon}
+                                                <span>{navItems[selectedTab].name}</span>
+                                            </div>
+                                            <BiChevronDown className="-mr-1 h-5 w-5 text-gray-400" aria-hidden="true" />
+                                        </Menu.Button>
+                                    </div>
+
+                                    <Transition
+                                        as={Fragment}
+                                        enter="transition ease-out duration-100"
+                                        enterFrom="transform opacity-0 scale-95"
+                                        enterTo="transform opacity-100 scale-100"
+                                        leave="transition ease-in duration-75"
+                                        leaveFrom="transform opacity-100 scale-100"
+                                        leaveTo="transform opacity-0 scale-95"
+                                    >
+                                        <Menu.Items className="absolute left-0 right-0 z-10 mt-2 origin-top rounded-xl bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-gray-900/5 dark:ring-gray-700 focus:outline-none">
+                                            <div className="p-1">
+                                                {navItems.map((item, index) => (
+                                                    <Menu.Item key={item.name}>
+                                                        {({ active }) => (
+                                                            <button
+                                                                onClick={() => handleTabChange(index)}
+                                                                className={`${
+                                                                    active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                                                                } ${
+                                                                    selectedTab === index ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'
+                                                                } group flex w-full items-center rounded-md px-3 py-2.5 text-sm gap-3`}
+                                                            >
+                                                                {item.icon}
+                                                                <span>{item.name}</span>
+                                                                {item.name === 'Hòm thư' && unreadCount > 0 && (
+                                                                    <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">
+                                                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                                                    </span>
+                                                                )}
+                                                            </button>
+                                                        )}
+                                                    </Menu.Item>
+                                                ))}
+                                            </div>
+                                        </Menu.Items>
+                                    </Transition>
+                                </Menu>
+                            </div>
                             <Tab.Panels className="focus:outline-none">
                                 <Tab.Panel><Dashboard profile={profile} onProfileUpdate={handleProfileUpdate} /></Tab.Panel>
                                 <Tab.Panel><Analytics profile={profile} /></Tab.Panel>
