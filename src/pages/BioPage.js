@@ -260,10 +260,11 @@ export default function BioPage() {
         );
     }
 
-    const backgroundValue = profile?.background || 'dynamic-default-bg';
+const backgroundValue = profile?.background || 'dynamic-default-bg';
     let pageStyle = {};
     let pageClassName = `flex flex-col items-center min-h-screen w-full p-4 sm:p-8 ${profile?.font || 'font-inter'}`;
 
+    // THAY ĐỔI BẮT ĐẦU TỪ ĐÂY
     if (backgroundValue.startsWith('http')) {
         const opacity = (profile?.backgroundImageOpacity ?? 50) / 100;
         const overlay = `linear-gradient(rgba(0, 0, 0, ${opacity}), rgba(0, 0, 0, ${opacity}))`;
@@ -274,10 +275,12 @@ export default function BioPage() {
             backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'fixed'
         };
-    } else if (backgroundValue.startsWith('linear-gradient')) {
-        pageStyle = { background: backgroundValue };
-    } else {
+    } else if (backgroundValue.startsWith('dynamic-')) {
+        // Đây là logic quan trọng được thêm vào để nhận diện class animation
         pageClassName += ` ${backgroundValue}`;
+    } else {
+        // Các trường hợp còn lại (màu tĩnh, gradient tĩnh) sẽ được áp dụng vào style
+        pageStyle = { background: backgroundValue };
     }
 
     const sortedBlocks = profile.blocks ? [...profile.blocks].sort((a, b) => a.blockOrder - b.blockOrder) : [];

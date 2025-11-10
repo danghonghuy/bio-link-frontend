@@ -116,4 +116,46 @@ body {
     animation: fadeIn 0.3s ease-out;
 }
 
+*/
+@keyframes rainbowFlowAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 1. Cầu Vồng Lỏng */
+.dynamic-liquid-rainbow-bg {
+  background: linear-gradient(120deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+  background-size: 600% 600%; /* Cần size lớn hơn vì có nhiều màu */
+  animation: rainbowFlowAnimation 18s ease infinite;
+}
+
+/* 2. Bình Minh Kẹo Bông (Pastel nhẹ nhàng) */
+.dynamic-candy-dawn-bg {
+  background: linear-gradient(-45deg, #ffafbd, #ffc3a0, #a0c4ff, #b6e2d3, #f6e58d);
+  background-size: 400% 400%;
+  animation: rainbowFlowAnimation 20s ease infinite; /* Chuyển động chậm, mơ màng */
+}
+
+/* 3. Vũ Điệu Neon (Sôi động, rực rỡ) */
+.dynamic-neon-dance-bg {
+  background: linear-gradient(-45deg, #f005e2, #05f0d5, #f0e205, #0575e6);
+  background-size: 400% 400%;
+  animation: rainbowFlowAnimation 10s ease infinite; /* Chuyển động nhanh, mạnh mẽ */
+}
+
+/* 4. Ánh Sáng Cực Quang (Huyền ảo, mượt mà) */
+.dynamic-aurora-borealis-bg {
+  background: linear-gradient(60deg, #00ff87, #60efff, #ff60c2, #ffc460, #00ff87);
+  background-size: 500% 500%;
+  animation: rainbowFlowAnimation 25s ease infinite; /* Chuyển động cực chậm, huyền bí */
+}
+
+/* 5. Ngọc Trai Ảo Ảnh (Lấp lánh, sang trọng) */
+.dynamic-iridescent-pearl-bg {
+  background: linear-gradient(-45deg, #e0c3fc, #8ec5fc, #f6d365, #fda085);
+  background-size: 400% 400%;
+  animation: rainbowFlowAnimation 15s ease infinite;
+}
+
 

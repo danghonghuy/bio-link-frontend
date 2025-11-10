@@ -3,10 +3,12 @@ import BlockRenderer from './BlockRenderer';
 import { motion } from 'framer-motion';
 
 export default function MobilePreview({ profile, blocks }) {
+
   const backgroundValue = profile?.background || 'dynamic-default-bg';
   let pageStyle = {};
   let pageClassName = 'relative w-full h-full overflow-y-auto p-6 backdrop-blur-md';
 
+  // THAY ĐỔI BẮT ĐẦU TỪ ĐÂY
   if (backgroundValue.startsWith('http')) {
     const opacity = (profile?.backgroundImageOpacity ?? 40) / 100;
     const overlay = `linear-gradient(rgba(0, 0, 0, ${opacity}), rgba(0, 0, 0, ${opacity}))`;
@@ -16,10 +18,11 @@ export default function MobilePreview({ profile, blocks }) {
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
     };
-  } else if (backgroundValue.startsWith('linear-gradient')) {
-    pageStyle = { background: backgroundValue };
-  } else {
+  } else if (backgroundValue.startsWith('dynamic-')) {
+    // Logic tương tự được áp dụng ở đây cho phần xem trước
     pageClassName += ` ${backgroundValue}`;
+  } else {
+    pageStyle = { background: backgroundValue };
   }
 
   const sortedBlocks = blocks ? [...blocks].sort((a, b) => a.blockOrder - b.blockOrder) : [];
